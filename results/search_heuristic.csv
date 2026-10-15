@@ -1,0 +1,28 @@
+﻿map,size,open_cells,food,ghosts,weighted_cells,algorithm,found,cost,expanded,time_sec,optimal
+ghost_small,7x11,32,3,1,0,UCS,True,16,109,0.001100,True
+ghost_small,7x11,32,3,1,0,A* (h=0),True,16,109,0.001348,True
+ghost_small,7x11,32,3,1,0,A* (heuristic nhom),True,16,58,0.000753,True
+ghost_two,9x17,73,3,2,0,UCS,True,32,418,0.006040,True
+ghost_two,9x17,73,3,2,0,A* (h=0),True,32,418,0.005511,True
+ghost_two,9x17,73,3,2,0,A* (heuristic nhom),True,32,280,0.003300,True
+large_maze,15x31,223,1,0,0,UCS,True,56,223,0.002143,True
+large_maze,15x31,223,1,0,0,A* (h=0),True,56,223,0.002414,True
+large_maze,15x31,223,1,0,0,A* (heuristic nhom),True,56,194,0.069403,True
+large_open,13x31,299,1,0,0,UCS,True,28,269,0.005028,True
+large_open,13x31,299,1,0,0,A* (h=0),True,28,269,0.005065,True
+large_open,13x31,299,1,0,0,A* (heuristic nhom),True,28,29,0.000648,True
+no_solution,6x9,20,1,0,0,UCS,False,0,19,0.000214,
+no_solution,6x9,20,1,0,0,A* (h=0),False,0,19,0.001360,
+no_solution,6x9,20,1,0,0,A* (heuristic nhom),False,0,19,0.000470,
+playmod,18x19,182,7,3,0,UCS,True,66,20062,0.377649,True
+playmod,18x19,182,7,3,0,A* (h=0),True,66,20062,0.362929,True
+playmod,18x19,182,7,3,0,A* (heuristic nhom),True,66,9772,0.202770,True
+tiny,10x22,95,4,0,7,UCS,True,87,1170,0.012577,True
+tiny,10x22,95,4,0,7,A* (h=0),True,87,1170,0.057610,True
+tiny,10x22,95,4,0,7,A* (heuristic nhom),True,87,902,0.011555,True
+uniform,5x7,12,1,0,0,UCS,True,6,12,0.000146,True
+uniform,5x7,12,1,0,0,A* (h=0),True,6,12,0.000132,True
+uniform,5x7,12,1,0,0,A* (heuristic nhom),True,6,12,0.000149,True
+weighted_trap,5x14,26,1,0,10,UCS,True,15,17,0.000201,True
+weighted_trap,5x14,26,1,0,10,A* (h=0),True,15,17,0.000190,True
+weighted_trap,5x14,26,1,0,10,A* (heuristic nhom),True,15,16,0.000204,True
