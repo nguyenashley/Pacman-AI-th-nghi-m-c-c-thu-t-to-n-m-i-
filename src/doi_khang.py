@@ -297,7 +297,9 @@ def minimax(layout, state, depth, time_limit=None, ghost_mode=None, recent=()) -
             return _leaf(current_state, current_depth), None
         actions = legal_ghost_actions(layout, current_state, ghost_index - 1)
         if not actions:
-            return _leaf(current_state, current_depth), None
+            if ghost_index == len(current_state.ghosts):
+                return max_value(current_state, current_depth - 1)
+            return min_value(current_state, current_depth, ghost_index + 1)
 
         v, best_action = INF, None
         for action in actions:
@@ -376,10 +378,11 @@ def alpha_beta(layout, state, depth, time_limit=None, ghost_mode=None, recent=()
         v = float('inf')
         best_action = None
         actions = legal_ghost_actions(layout, current_state, ghost_index - 1)
-        
-    
         if not actions:
-            return _leaf(current_state, current_depth), None
+            if ghost_index == len(current_state.ghosts):
+                return max_value(current_state, current_depth - 1, alpha, beta)
+            return min_value(current_state, current_depth, ghost_index + 1, alpha, beta)
+        
         if len(actions) > 1:
             ghost = current_state.ghosts[ghost_index - 1]
             actions.sort(key=lambda a: _manhattan(_move_cell(ghost, a), current_state.pacman))
@@ -485,7 +488,9 @@ def expectimax(layout, state, depth, time_limit=None, ghost_mode=None, recent=()
                 return _leaf(current_state, current_depth), None
             actions = legal_ghost_actions(layout, current_state, ghost_index - 1)
             if not actions:
-                return _leaf(current_state, current_depth), None
+                if ghost_index == len(current_state.ghosts):
+                    return max_value(current_state, current_depth - 1)
+                return exp_value(current_state, current_depth, ghost_index + 1)
             expected_score = 0
             for action, prob in _ghost_distribution(current_state, ghost_index - 1, actions, ghost_mode):
                 expanded[0] += 1

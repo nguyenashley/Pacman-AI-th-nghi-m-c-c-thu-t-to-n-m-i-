@@ -24,8 +24,8 @@ log = logging.getLogger("pacman")
 
 # Màu sắc
 BG = "black"             # màu nền
-WALL = "#2121ff"         # màu tường
-WALL_BORDER = "#4d4dff"  # màu viền tường
+WALL = "#ff3faf"         # màu tường
+WALL_BORDER = "#00b7ff"  # màu viền tường
 FOOD = "#ffffff"         # màu food
 PATH_COLOR = "#782257"   # màu đường đi của thuật toán
 
@@ -213,6 +213,17 @@ class Controller:
         # chế độ ma greedy
         self.chase_steps = 5  #đuổi 5 lượt
         self.random_steps = 2  #random 2 lượt
+        self.ambush_lead = 4   # ma đón đầu nhắm tới ô cách Pacman tối đa 4 ô theo hướng Pacman đang đi
+        self.ambush_near = 4   # ma cách Pacman <= 4 bước thì thôi đón đầu, đuổi thẳng
+        self.pacman_dir = None  # hướng Pacman vừa đi (để ma đoán nó sẽ đi đâu)
+        self.ambush_enabled = True  # False thì ma greedy chỉ còn đuổi thẳng + random, không đón đầu (map playmod)
+
+    def set_map(self, path):
+        """Cấu hình ma greedy theo tên bản đồ: playmod không đón đầu; giant đuổi 5 random 1, bản đồ khác đuổi 5 random 2"""
+        name = path.replace("\\", "/").split("/")[-1].lower()
+        self.ambush_enabled = "playmod" not in name
+        self.chase_steps = 5
+        self.random_steps = 2
 
     def load_actions(self, actions):
         self.restart()
@@ -276,6 +287,7 @@ class Controller:
         self.turn = 0
         self.single = False
         self.rng.seed(self.seed)
+        self.pacman_dir = None
         self.view.draw_state(self.state)
 
 
@@ -317,6 +329,7 @@ class Controller:
     def _launch(self, old, action):
         """Pacman đi action, sau đó ma đi rồi chạy animation"""
         self.recent.append(old.pacman)
+        self.pacman_dir = action
         after_pacman = move_pacman(self.layout, old, action)
         new = self._move_ghosts(after_pacman)
 
@@ -338,25 +351,49 @@ class Controller:
     def _move_ghosts(self, s):
         """Cho từng con ma đi một bước rồi trả về trạng thái mới"""
         mode = self.ghost_mode
+        ambush = False
         if mode == "chase":
             chase = True
         elif mode == "greedy":
             cycle = self.chase_steps + self.random_steps
             chase = self.turn % cycle < self.chase_steps
+            ambush = chase and self.ambush_enabled  # trong 5 lượt "săn", ma greedy chia hai kiểu: đón đầu và bám đuôi
         else:
             chase = False
         self.turn += 1
 
-        # tính khoảng cách từ mọi ô tới Pacman (để ma biết đường đi ngắn nhất)
+        # khoảng cách từ mọi ô tới Pacman (bám đuôi) và tới ô phía trước Pacman (đón đầu)
         dist = self._reach([s.pacman], 10 ** 9) if chase else None
+        dist_ahead = None
+        if ambush:
+            dist_ahead = self._reach([self._ambush_target(s.pacman)], 10 ** 9)
+
         for i in range(len(s.ghosts)):
             if is_terminal(s):
                 break
             actions = legal_ghost_actions(self.layout, s, i)
             if actions:
-                action = self._pick_ghost_action(s, i, actions, dist)
+                goal = dist
+                # ma chỉ số chẵn đón đầu (nếu còn xa Pacman), ma chỉ số lẻ luôn bám đuôi => gọng kìm
+                if ambush and i % 2 == 0 and dist.get(s.ghosts[i], 10 ** 9) > self.ambush_near:
+                    goal = dist_ahead
+                action = self._pick_ghost_action(s, i, actions, goal)
                 s = move_ghost(self.layout, s, i, action)
         return s
+
+    def _ambush_target(self, pacman):
+        """Ô nằm phía trước Pacman theo hướng nó vừa đi (tối đa ambush_lead ô, dừng khi gặp tường)"""
+        if self.pacman_dir not in DIRECTIONS:
+            return pacman
+        dr, dc = DIRECTIONS[self.pacman_dir]
+        lay = self.layout
+        r, c = pacman
+        for _ in range(self.ambush_lead):
+            nr, nc = r + dr, c + dc
+            if not (0 <= nr < lay.height and 0 <= nc < lay.width) or (nr, nc) in lay.walls:
+                break
+            r, c = nr, nc
+        return (r, c)
 
     def _pick_ghost_action(self, s, i, actions, dist):
         """Chọn hướng đi cho ma thứ i

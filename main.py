@@ -94,6 +94,7 @@ def main():
         new_layout, new_start = load_layout(map_var.get())
         controller.layout = new_layout
         controller.start_state = new_start
+        controller.set_map(map_var.get())  # playmod: ma greedy không đón đầu
         view.set_layout(new_layout)
         controller.load_actions([])
 
